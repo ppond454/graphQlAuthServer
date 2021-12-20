@@ -8,6 +8,11 @@ export enum RoleOptions {
 }
 
 export interface AppContext {
-  req: Request
+  req: AppRequest
   res: Response
+}
+
+export interface AppRequest extends Request {
+  userId ? : string 
+  tokenVersion? : number
 }

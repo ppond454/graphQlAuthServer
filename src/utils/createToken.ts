@@ -21,3 +21,7 @@ export const sendToken=( res: Response, token: string )=>{
         sameSite: "none",
       })
 }
+
+export const verifyToken=(token : string)=>{
+  return jwt.verify(token,"secret")
+}

@@ -2,6 +2,7 @@ import express from "express"
 import { server } from "./createServer"
 import mongoose from "mongoose"
 import { config } from "dotenv"
+import cookiePaser from "cookie-parser"
 
 config()
 
@@ -20,6 +21,7 @@ const startServer = async () => {
 
     const PORT: number = 5000 || process.env.PORT
     const app = express()
+    app.use(cookiePaser())
 
     const _server = await server()
     await _server.start()

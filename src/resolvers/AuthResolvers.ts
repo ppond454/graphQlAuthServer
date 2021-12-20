@@ -1,4 +1,12 @@
-import { Arg, Mutation, Query, Resolver, Ctx } from "type-graphql"
+import {
+  Arg,
+  Mutation,
+  Query,
+  Resolver,
+  Ctx,
+  ObjectType,
+  Field,
+} from "type-graphql"
 import { hash, compare } from "bcryptjs"
 
 import { User, UserModel } from "../entities/User"
@@ -9,6 +17,13 @@ import {
 } from "../utils/validate"
 import { createToken, sendToken } from "../utils/createToken"
 import { AppContext } from "../types"
+import { isAuthen } from "../utils/authhandler"
+
+@ObjectType()
+export class ResponseMessage {
+  @Field()
+  message: string
+}
 
 @Resolver()
 export class AuthResolvers {
@@ -16,6 +31,19 @@ export class AuthResolvers {
   async users(): Promise<User[] | null> {
     try {
       return UserModel.find()
+    } catch (e) {
+      throw e
+    }
+  }
+
+  @Query(() => User, { nullable: true }) // [User]!
+  async protected(@Ctx() { req }: AppContext): Promise<User | null> {
+    try {
+      if (!req.userId) throw new Error("please login")
+
+      const user = await isAuthen(req.userId, req.tokenVersion)
+
+      return user
     } catch (e) {
       throw e
     }
@@ -97,6 +125,33 @@ export class AuthResolvers {
       sendToken(res, token)
 
       return user
+    } catch (e) {
+      throw e
+    }
+  }
+
+  @Mutation(() => ResponseMessage, { nullable: true })
+  async signOut(
+    @Ctx() { req, res }: AppContext
+  ): Promise<ResponseMessage | null> {
+    try {
+      const user = await UserModel.findById(req.userId)
+
+      if (!user) return null
+
+      // user.tokenVersion = user.tokenVersion + 1
+
+      await user.save()
+      //clear token
+
+      res.clearCookie("jwt",{
+        httpOnly: true,
+        secure: true,
+        sameSite: "none",
+      })
+     
+
+      return { message: "logOut complete" }
     } catch (e) {
       throw e
     }

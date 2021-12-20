@@ -10,11 +10,17 @@ scalar DateTime
 
 type Mutation {
   signIn(email: String!, password: String!): User
+  signOut: ResponseMessage
   signUp(email: String!, password: String!, username: String!): User
 }
 
 type Query {
+  protected: User
   users: [User]!
+}
+
+type ResponseMessage {
+  message: String!
 }
 
 """User Model"""
